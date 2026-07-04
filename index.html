@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>🍽️ Премиум кулинарный органайзер | 100+ рецептов</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+    :root {
+      --bg-gradient: linear-gradient(145deg, #fff3e0 0%, #ffe0cc 100%);
+      --card-bg: white;
+      --text-color: #4a3f35;
+      --badge-bg: #fbe9e7;
+      --time-badge-bg: #f3f0e6;
+      --modal-bg: #fffbf5;
+      --filter-bg: rgba(255,255,250,0.9);
+      --border-color: rgba(255,200,150,0.3);
+    }
+    body.dark {
+      --bg-gradient: linear-gradient(145deg, #2c2416 0%, #3a2e1e 100%);
+      --card-bg: #4b3b2b;
+      --text-color: #f0e0c8;
+      --badge-bg: #5a3e32;
+      --time-badge-bg: #4f3e2c;
+      --modal-bg: #5b4636;
+      --filter-bg: rgba(80,60,40,0.9);
+      --border-color: rgba(200,150,100,0.4);
+    }
+    .container { max-width: 1400px; width: 100%; }
+    header { text-align: center; margin-bottom: 2rem; position: relative; }
+    h1 {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #e8532e, #f7971e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 6px 8px rgba(232, 83, 46, 0.25));
+      margin-bottom: 0.3rem;
+    }
+    .subtitle {
+      font-weight: 600;
+      color: #b45f4a;
+      background: rgba(255,255,240,0.7);
+      display: inline-block;
+      padding: 0.4rem 1.8rem;
+      border-radius: 40px;
+      backdrop-filter: blur(4px);
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1.5rem 0 2rem;
+    }
+    .search-box {
+      padding: 0.7rem 1.4rem;
+      border-radius: 40px;
+      border: 2px solid #fbc4a8;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      background: white;
+      color: #4a3f35;
+      width: 240px;
+      outline: none;
+      transition: 0.2s;
+    }
+    .search-box:focus { border-color: #e8532e; }
+    .theme-toggle, .add-recipe-btn {
+      background: white;
+      border: none;
+      padding: 0.7rem 1.6rem;
+      border-radius: 40px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: 0.2s;
+      background: var(--filter-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+    .theme-toggle:hover, .add-recipe-btn:hover { transform: translateY(-2px); }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 2.2rem;
+    }
+    .filter-btn {
+      background: var(--filter-bg);
+      border: 2px solid transparent;
+      padding: 0.5rem 1.4rem;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      color: var(--text-color);
+      font-family: inherit;
+    }
+    .filter-btn.active {
+      background: linear-gradient(115deg, #e8532e, #f7971e);
+      color: white;
+      border-color: transparent;
+    }
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.6rem;
+      margin-bottom: 3rem;
+    }
+    .recipe-card {
+      background: var(--card-bg);
+      border-radius: 28px;
+      padding: 1.5rem 1rem 1.2rem;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      animation: fadeInUp 0.4s ease forwards;
+      opacity: 0;
+    }
+    .recipe-card:hover { transform: translateY(-6px); }
+    .recipe-emoji { font-size: 3.5rem; }
+    .recipe-title { font-weight: 800; font-size: 1.2rem; margin: 0.4rem 0; }
+    .recipe-desc { font-size: 0.8rem; color: #7b6b5d; margin-bottom: 0.6rem; }
+    .badge-row { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; }
+    .favorite-star {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #ccc;
+      transition: 0.2s;
+      margin-left: 0.3rem;
+    }
+    .favorite-star.active { color: #f7971e; }
+    .rating { display: flex; gap: 0.2rem; margin-top: 0.3rem; }
+    .star { font-size: 1.2rem; cursor: pointer; color: #ddd; transition: 0.1s; }
+    .star.active { color: #f7971e; }
+    .modal-overlay { /* как раньше */ position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; z-index:1000; visibility:hidden; opacity:0; transition:0.25s; padding:1rem; }
+    .modal-overlay.active { visibility:visible; opacity:1; }
+    .modal-content { background: var(--modal-bg); max-width:650px; width:100%; max-height:85vh; overflow-y:auto; border-radius:35px; padding:2rem; position:relative; box-shadow:0 30px 50px rgba(0,0,0,0.3); transform:scale(0.9); transition:0.3s; }
+    .modal-overlay.active .modal-content { transform:scale(1); }
+    .close-modal { position:absolute; top:1rem; right:1.5rem; font-size:2rem; background:none; border:none; cursor:pointer; color:#b45f4a; }
+    .section-title { font-weight:800; margin-top:1rem; border-left:5px solid #f7971e; padding-left:1rem; }
+    .btn { background:#f7971e; color:white; border:none; padding:0.6rem 1.4rem; border-radius:30px; font-weight:700; cursor:pointer; margin:0.3rem; }
+    footer { text-align:center; margin-top:2rem; font-weight:700; color:#b1907a; }
+    @keyframes fadeInUp { 0%{opacity:0;transform:translateY(20px);} 100%{opacity:1;transform:translateY(0);} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🍽️ Премиум-рецепты <span class="counter-badge" id="recipeCount">100</span></h1>
+      <p class="subtitle">🌈 Кулинарный органайзер · Избранное · Поиск</p>
+    </header>
+
+    <div class="toolbar">
+      <input type="text" class="search-box" id="searchInput" placeholder="🔍 Поиск блюда или ингредиента...">
+      <button class="theme-toggle" id="themeToggle">🌓 Тема</button>
+      <button class="add-recipe-btn" id="openAddModal">➕ Добавить рецепт</button>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-category="all">🌟 Все</button>
+      <button class="filter-btn" data-category="breakfast">🌅 Завтраки</button>
+      <button class="filter-btn" data-category="soup">🍲 Супы</button>
+      <button class="filter-btn" data-category="main">🍗 Основные</button>
+      <button class="filter-btn" data-category="dessert">🍰 Десерты</button>
+      <button class="filter-btn" data-category="snack">🥨 Закуски</button>
+      <button class="filter-btn" data-category="drink">🍹 Напитки</button>
+    </div>
+
+    <div class="recipes-grid" id="recipesGrid"></div>
+    <footer>👩‍🍳 Создано с душой · Продаваемый шаблон 2025</footer>
+  </div>
+
+  <!-- Модальное окно рецепта -->
+  <div class="modal-overlay" id="recipeModal">
+    <div class="modal-content" id="recipeModalContent">
+      <button class="close-modal" id="closeRecipeModal">&times;</button>
+      <div id="recipeDetail"></div>
+    </div>
+  </div>
+
+  <!-- Модальное окно добавления рецепта -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal-content">
+      <button class="close-modal" id="closeAddModal">&times;</button>
+      <h2>➕ Новый рецепт</h2>
+      <input type="text" id="addName" placeholder="Название блюда" style="width:100%; padding:0.5rem; margin:0.5rem 0; border-radius:20px; border:1px solid #ccc;">
+      <input type="text" id="addEmoji" placeholder="Эмодзи (например 🍕)" style="width:100%; padding:0.5rem; margin:0.5rem 0; border-radius:20px; border:1px solid #ccc;">
+      <select id="addCategory" style="width:100%; padding:0.5rem; margin:0.5rem 0; border-radius:20px;">
+        <option value="breakfast">🌅 Завтрак</option>
+        <option value="soup">🍲 Суп</option>
+        <option value="main">🍗 Основное</option>
+        <option value="dessert">🍰 Десерт</option>
+        <option value="snack">🥨 Закуска</option>
+        <option value="drink">🍹 Напиток</option>
+      </select>
+      <input type="text" id="addTime" placeholder="Время (например 30 мин)" style="width:100%; padding:0.5rem; margin:0.5rem 0; border-radius:20px; border:1px solid #ccc;">
+      <textarea id="addDesc" placeholder="Краткое описание" rows="2" style="width:100%; padding:0.5rem; margin:0.5rem 0; border-radius:20px; border:1px solid #ccc;"></textarea>
+      <textarea id="addIngredients" placeholder="Ингредиенты (каждый с новой строки)" rows="4" style="width:100%; padding:0.5rem; margin:0.5rem 0; border-radius:20px; border:1px solid #ccc;"></textarea>
+      <textarea id="addSteps" placeholder="Шаги (каждый с новой строки)" rows="4" style="width:100%; padding:0.5rem; margin:0.5rem 0; border-radius:20px; border:1px solid #ccc;"></textarea>
+      <button id="saveNewRecipe" class="btn">💾 Сохранить</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Генерация базовых рецептов (100) как раньше
+      const baseRecipes = [
+        { name: "🥞 Нежные сырники", emoji: "🥞", cat: "breakfast", time: "30 мин", desc: "Творожные сырники с хрустящей корочкой", ing: ["🧀 Творог 500 г","🥚 Яйцо 1 шт.","🍚 Сахар 2 ст.л.","🌾 Мука 4 ст.л.","🌸 Ванилин"], steps: ["Размять творог вилкой 🥄","Добавить яйцо и сахар 🥚","Всыпать муку 🌾","Сформировать и жарить до золотистой корочки 🔥"] },
+        { name: "🥞 Панкейки с ягодами", emoji: "🥞", cat: "breakfast", time: "25 мин", desc: "Пышные американские блинчики с ягодами", ing: ["🌾 Мука 200 г","🥛 Молоко 200 мл","🥚 Яйцо 1 шт.","🍚 Сахар 2 ст.л.","🧂 Разрыхлитель","🍓 Ягоды"], steps: ["Смешать сухие ингредиенты 🥣","Влить молоко и яйцо 🥛","Жарить до пузырьков 🫧","Подавать с ягодами 🍓"] },
+        { name: "🍳 Омлет с зеленью и сыром", emoji: "🍳", cat: "breakfast", time: "15 мин", desc: "Воздушный омлет с расплавленным сыром", ing: ["🥚 Яйца 3 шт.","🥛 Молоко 50 мл","🧀 Сыр 50 г","🌿 Зелень","🧈 Масло"], steps: ["Взбить яйца с молоком 🥚","Добавить зелень и сыр 🌿","Жарить под крышкой 5-7 минут ⏱️"] },
+        { name: "🍅 Томатный крем-суп с базиликом", emoji: "🍅", cat: "soup", time: "40 мин", desc: "Бархатистый суп с нотками базилика", ing: ["🍅 Помидоры 600 г","🧅 Лук","🧄 Чеснок","🥛 Сливки","🌿 Базилик"], steps: ["Обжарить лук и чеснок 🧅","Добавить помидоры 🍅","Тушить 15 минут ⏲️","Пробить блендером 🌀","Добавить сливки 🥛"] },
+        { name: "🍜 Куриный суп с лапшой", emoji: "🍜", cat: "soup", time: "60 мин", desc: "Наваристый бульон с домашней лапшой", ing: ["🍗 Курица 300 г","🥕 Морковь","🧅 Лук","🍝 Лапша","🌿 Зелень"], steps: ["Отварить курицу 40 минут 🍗","Процедить бульон 🥣","Добавить лапшу и морковь 🥕","Варить до готовности 🔥"] },
+        { name: "🍝 Паста Карбонара", emoji: "🍝", cat: "main", time: "25 мин", desc: "Классическая итальянская паста с беконом", ing: ["🍝 Спагетти 300 г","🥓 Бекон 150 г","🥚 Желтки 3 шт.","🧀 Пармезан","🧄 Чеснок"], steps: ["Отварить пасту аль денте 🍝","Обжарить бекон с чесноком 🥓","Смешать желтки с сыром 🥚","Соединить всё и подавать 🍽️"] },
+        { name: "🐟 Лосось в медово-соевом соусе", emoji: "🐟", cat: "main", time: "30 мин", desc: "Сочное филе лосося в карамельной глазури", ing: ["🐟 Лосось 400 г","🥢 Соевый соус","🍯 Мёд","🧄 Чеснок","🌰 Кунжут"], steps: ["Замариновать рыбу 15 минут ⏲️","Обжарить с двух сторон 🔥","Посыпать кунжутом 🌰"] },
+        { name: "🍗 Куриные котлеты с пюре", emoji: "🍗", cat: "main", time: "45 мин", desc: "Сочные домашние котлеты с нежным пюре", ing: ["🍗 Филе 500 г","🧅 Лук","🥚 Яйцо","🍞 Сухари","🥔 Картофель"], steps: ["Пропустить мясо через мясорубку 🔪","Сформировать котлеты 🍗","Обжарить до готовности 🔥","Подавать с пюре 🥔"] },
+        { name: "🥔 Картошка по-деревенски", emoji: "🥔", cat: "main", time: "45 мин", desc: "Ароматные дольки с паприкой и чесноком", ing: ["🥔 Картофель 800 г","🌶️ Паприка","🧄 Чесночный порошок","🌿 Орегано","🫒 Масло"], steps: ["Нарезать дольками 🔪","Смешать с маслом и специями 🥣","Запечь до хрустящей корочки 🔥"] },
+        { name: "🍫 Шоколадный фондан", emoji: "🍫", cat: "dessert", time: "25 мин", desc: "Изысканный десерт с жидкой начинкой", ing: ["🍫 Шоколад 150 г","🧈 Масло 100 г","🥚 Яйца 3 шт.","🍚 Сахар 80 г","🌾 Мука 50 г"], steps: ["Растопить шоколад с маслом 🍫","Взбить яйца с сахаром 🥚","Добавить муку 🌾","Выпекать 12 минут при 200°C 🔥"] }
+      ];
+      const variations = [
+        { suffix: "Классический", emoji: "👌", timeAdj: 0, descPrefix: "Традиционный рецепт" },
+        { suffix: "По-итальянски", emoji: "🍕", timeAdj: 5, descPrefix: "Итальянский акцент" },
+        { suffix: "Пряный", emoji: "🌶️", timeAdj: 2, descPrefix: "С пикантной ноткой" },
+        { suffix: "С сыром", emoji: "🧀", timeAdj: 3, descPrefix: "Сырная феерия" },
+        { suffix: "По-деревенски", emoji: "🏡", timeAdj: 5, descPrefix: "Уютный деревенский стиль" },
+        { suffix: "Фьюжн", emoji: "✨", timeAdj: 8, descPrefix: "Современный микс вкусов" },
+        { suffix: "Лайт", emoji: "🥗", timeAdj: -5, descPrefix: "Облегчённая версия" },
+        { suffix: "Гурмэ", emoji: "🍷", timeAdj: 10, descPrefix: "Ресторанное исполнение" },
+        { suffix: "Быстрый", emoji: "⚡", timeAdj: -10, descPrefix: "Экспресс-вариант" },
+        { suffix: "С травами", emoji: "🌿", timeAdj: 2, descPrefix: "Ароматные травы" }
+      ];
+
+      let allRecipes = JSON.parse(localStorage.getItem('customRecipes')) || [];
+      if (allRecipes.length === 0) {
+        let idCounter = 1;
+        baseRecipes.forEach((base, baseIdx) => {
+          variations.forEach((variation, varIdx) => {
+            const suffix = variation.suffix;
+            const fullName = `${base.name} ${suffix} ${variation.emoji}`;
+            const baseTime = parseInt(base.time);
+            const newTime = Math.max(10, baseTime + variation.timeAdj);
+            const timeStr = `${newTime} мин`;
+            const description = `${variation.descPrefix}: ${base.desc}`;
+            const emoji = variation.emoji || base.emoji;
+            let category = base.cat;
+            if (baseIdx === 0 && varIdx === 8) category = "snack";
+            if (baseIdx === 9 && varIdx === 7) category = "drink";
+            if (base.name.includes("Картошка") && varIdx === 5) category = "snack";
+            const recipeSteps = [...base.steps, `✨ Финальный штрих: украсить в стиле "${variation.suffix}" ${variation.emoji}`];
+            const recipeIngredients = [...base.ing, `🎁 Секретный ингредиент: ${variation.suffix} ${variation.emoji}`];
+            allRecipes.push({
+              id: idCounter++,
+              name: fullName,
+              emoji: emoji,
+              category: category,
+              time: timeStr,
+              description: description,
+              ingredients: recipeIngredients,
+              steps: recipeSteps,
+              rating: 0,
+            });
+          });
+        });
+        saveRecipesToStorage();
+      }
+
+      function saveRecipesToStorage() {
+        localStorage.setItem('customRecipes', JSON.stringify(allRecipes));
+      }
+
+      let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+      let currentFilter = 'all';
+      let searchQuery = '';
+
+      const recipesGrid = document.getElementById('recipesGrid');
+      const recipeModal = document.getElementById('recipeModal');
+      const recipeDetail = document.getElementById('recipeDetail');
+      const addModal = document.getElementById('addModal');
+      const searchInput = document.getElementById('searchInput');
+
+      function renderRecipes() {
+        recipesGrid.innerHTML = '';
+        let filtered = allRecipes.filter(r => currentFilter === 'all' || r.category === currentFilter);
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          filtered = filtered.filter(r => 
+            r.name.toLowerCase().includes(q) || 
+            r.ingredients.some(i => i.toLowerCase().includes(q)) ||
+            r.description.toLowerCase().includes(q)
+          );
+        }
+        document.getElementById('recipeCount').textContent = filtered.length;
+        filtered.forEach((recipe, index) => {
+          const card = document.createElement('div');
+          card.className = 'recipe-card';
+          card.style.animationDelay = `${index * 0.01}s`;
+          const isFav = favorites.includes(recipe.id);
+          card.innerHTML = `
+            <div class="recipe-emoji">${recipe.emoji}</div>
+            <h3 class="recipe-title">${recipe.name}</h3>
+            <p class="recipe-desc">${recipe.description}</p>
+            <div class="badge-row">
+              <span class="category-badge">${getCategoryName(recipe.category)}</span>
+              <span class="time-badge">⏱️ ${recipe.time}</span>
+              <button class="favorite-star ${isFav ? 'active' : ''}" data-id="${recipe.id}">★</button>
+            </div>
+            <div class="rating" data-id="${recipe.id}">
+              ${[1,2,3,4,5].map(s => `<span class="star ${s <= (recipe.rating||0) ? 'active' : ''}" data-val="${s}">★</span>`).join('')}
+            </div>
+          `;
+          card.addEventListener('click', (e) => {
+            if (e.target.classList.contains('favorite-star') || e.target.classList.contains('star')) return;
+            openRecipe(recipe.id);
+          });
+          recipesGrid.appendChild(card);
+        });
+
+        // Обработчики звёзд рейтинга
+        document.querySelectorAll('.star').forEach(star => {
+          star.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = parseInt(this.parentElement.dataset.id);
+            const val = parseInt(this.dataset.val);
+            const recipe = allRecipes.find(r => r.id === id);
+            if (recipe) {
+              recipe.rating = val;
+              saveRecipesToStorage();
+              renderRecipes();
+            }
+          });
+        });
+
+        // Обработчики избранного
+        document.querySelectorAll('.favorite-star').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = parseInt(this.dataset.id);
+            if (favorites.includes(id)) {
+              favorites = favorites.filter(fid => fid !== id);
+            } else {
+              favorites.push(id);
+            }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            renderRecipes();
+          });
+        });
+      }
+
+      function getCategoryName(cat) {
+        const map = { 'breakfast': '🌅 Завтрак', 'soup': '🍲 Суп', 'main': '🍗 Основное', 'dessert': '🍰 Десерт', 'snack': '🥨 Закуска', 'drink': '🍹 Напиток' };
+        return map[cat] || cat;
+      }
+
+      function openRecipe(id) {
+        const recipe = allRecipes.find(r => r.id === id);
+        if (!recipe) return;
+        const ingHTML = recipe.ingredients.map(i => `<li>🥄 ${i}</li>`).join('');
+        const stepsHTML = recipe.steps.map(s => `<li>${s}</li>`).join('');
+        recipeDetail.innerHTML = `
+          <div class="modal-emoji">${recipe.emoji} 🎉</div>
+          <h2 class="modal-title">${recipe.name} ✨</h2>
+          <p>⏱️ ${recipe.time} | ${recipe.description} 😋</p>
+          <div class="section-title">🛒 Ингредиенты</div>
+          <ul class="ingredients-list">${ingHTML}</ul>
+          <div class="section-title">👨‍🍳 Приготовление</div>
+          <ol class="steps-list">${stepsHTML}</ol>
+          <div style="text-align:center; margin-top:1rem;">
+            <button class="btn" onclick="window.print()">🖨️ Печать</button>
+            <button class="btn" onclick="generateShoppingList(${recipe.id})">🛒 Список покупок</button>
+          </div>
+        `;
+        recipeModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      window.generateShoppingList = function(id) {
+        const recipe = allRecipes.find(r => r.id === id);
+        if (!recipe) return;
+        const list = recipe.ingredients.map(i => i.replace(/[🎁🥄🧀🥚🍚🌾🌸🥛🍓🧂🥣🫧🍅🧅🧄🥛🌿🍗🥕🍝🧈🥢🍯🌰🍞🥔🌶️🧄🫒✨]/g, '').trim()).join('\n');
+        alert('🛒 Список покупок:\n\n' + list);
+      };
+
+      function closeModals() {
+        recipeModal.classList.remove('active');
+        addModal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      document.getElementById('closeRecipeModal').addEventListener('click', closeModals);
+      document.getElementById('closeAddModal').addEventListener('click', closeModals);
+      recipeModal.addEventListener('click', e => { if (e.target === recipeModal) closeModals(); });
+      addModal.addEventListener('click', e => { if (e.target === addModal) closeModals(); });
+
+      // Фильтры
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentFilter = this.dataset.category;
+          renderRecipes();
+        });
+      });
+
+      // Поиск
+      searchInput.addEventListener('input', function() {
+        searchQuery = this.value;
+        renderRecipes();
+      });
+
+      // Тема
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+      });
+
+      // Добавление рецепта
+      document.getElementById('openAddModal').addEventListener('click', () => {
+        addModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+
+      document.getElementById('saveNewRecipe').addEventListener('click', () => {
+        const name = document.getElementById('addName').value.trim();
+        const emoji = document.getElementById('addEmoji').value.trim() || '🍽️';
+        const cat = document.getElementById('addCategory').value;
+        const time = document.getElementById('addTime').value.trim() || '30 мин';
+        const desc = document.getElementById('addDesc').value.trim();
+        const ing = document.getElementById('addIngredients').value.split('\n').filter(i => i.trim() !== '');
+        const steps = document.getElementById('addSteps').value.split('\n').filter(s => s.trim() !== '');
+        if (!name || !desc || ing.length === 0 || steps.length === 0) {
+          alert('❌ Заполните все поля!');
+          return;
+        }
+        const newId = Math.max(...allRecipes.map(r => r.id), 0) + 1;
+        allRecipes.push({
+          id: newId,
+          name: emoji + ' ' + name,
+          emoji: emoji,
+          category: cat,
+          time: time,
+          description: desc,
+          ingredients: ing,
+          steps: steps,
+          rating: 0,
+        });
+        saveRecipesToStorage();
+        closeModals();
+        renderRecipes();
+        // Очистка формы
+        document.getElementById('addName').value = '';
+        document.getElementById('addEmoji').value = '';
+        document.getElementById('addTime').value = '';
+        document.getElementById('addDesc').value = '';
+        document.getElementById('addIngredients').value = '';
+        document.getElementById('addSteps').value = '';
+      });
+
+      renderRecipes();
+    })();
+  </script>
+</body>
+</html>
